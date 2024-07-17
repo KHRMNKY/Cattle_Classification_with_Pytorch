@@ -14,6 +14,7 @@ Thus, it can be determined which breed a given cattle image belongs to.
 - [Usage](#usage)
 - [Model Architecture](#model-architecture)
 - [Training](#training)
+- [Data Preprocessing]((#data-preprocessing))
 
 
 ## Introduction
@@ -22,7 +23,7 @@ Accurate cattle species detection is important for efficient farm management and
 
 ## Dataset
 
-The dataset used for this project consists of images of different cattle species. Each image is labeled with the corresponding species. The dataset should be organized into subfolders for each species under a main directory.
+The Cattle dataset used for this project consists of images of different cattle species. Each image is labeled with the corresponding species.
 
 ## Installation
 
@@ -51,3 +52,9 @@ python train_model.py
 
 ## Model Architecture
 The ResNet50 architecture was used and fine-tuned on our dataset with PyTorch.
+
+
+## Data Preprocessing
+In this section, the dataset has been prepared using PCA method and  kmeans2 clustering algorithm.
+These operations are located in the preprocessing.py file.
+
