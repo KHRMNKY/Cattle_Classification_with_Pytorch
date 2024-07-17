@@ -1,9 +1,9 @@
 # Cattle Species Detection with PyTorch
-Bu projede 7 sığır ırkı arasında sınıflandırma yaptım.
+In this project, I classified 7 cattle breeds.
 
-7 sığırı ırk : Angus, Charolais, Hereford, Holstein, Jersey, Simental, Montofon
+7 cattle breeds: Angus, Charolais, Hereford, Holstein, Jersey, Simmental, Montofon
 
-Böylece modele verilen bir sığır görüntüden hangi ırka ait olduğu belirlenebilir.
+Thus, it can be determined which breed a given cattle image belongs to.
 
 
 ## Table of Contents
