@@ -76,7 +76,7 @@ def training_loop (epochs, lr, train_loader, test_loader, model):
 
 
 if __name__ == "__main__":
-    epochs = 5
+    epochs = 50
     lr = 0.05
     results = training_loop(epochs = epochs, lr = lr, train_loader = train_loader, test_loader= test_loader , model= model)
     show_loss_and_accuracy(results, epochs)
