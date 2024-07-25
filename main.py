@@ -1,28 +1,37 @@
-from utils import image_pred, plt_show
-import argparse
+from utils import device, transform, classes
+from fastapi import FastAPI, UploadFile, File
+from pydantic import BaseModel
+import io
+import torch
+from torch import nn
+import torchvision
+from PIL import Image
 
 
-def argparsee():
-    parser = argparse.ArgumentParser()
+modelPath = ".\\models\\model_(92.71%)_acc.pth"
 
-    parser.add_argument('--modelPath',
-                        type = str,
-                        required=True,
-                        help = 'model giriniz'
-                        )
-    
-    parser.add_argument('--imagePath',
-                        type = str,
-                        required=True,
-                        help = 'path giriniz'
-                        )
+class Pred(BaseModel):
+    label: str
+    confidence: float
 
-    return parser.parse_args()
+app = FastAPI()
 
+@app.post("/predict", response_model=Pred)
+async def image_predd(file: UploadFile = File(...)):
+    model = torchvision.models.resnet50()
+    model.fc = nn.Linear(in_features=2048, out_features=7, bias=True)
+    model_weights = torch.load(modelPath, map_location=device)
+    model.load_state_dict(model_weights)
+    model.to(device)
+    model.eval()
 
-if __name__ == "__main__":
-    args = argparsee()
-    modelPath, imagePath = args.modelPath, args.imagePath
-    pred, preds = image_pred(modelPath, imagePath)
-    plt_show(imagePath, pred ,preds)   
+    with torch.no_grad():
+       img = Image.open(io.BytesIO(await file.read())).convert("RGB")
+       img = transform(img).unsqueeze(0).to(device)
+       loggit = model(img)
+       preds = nn.Softmax(dim=1)(loggit)
+       pred = torch.argmax(preds, dim=1).item()
+       label, confidence = classes[pred], preds[0][pred]
+    return Pred(label=label, confidence=confidence)
+
 
