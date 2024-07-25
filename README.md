@@ -39,7 +39,7 @@ pip install -r requirements.txt
 
 ## Using CLI
 ```bash
-python cli.py --modelPath <"model yolu"> --imagePath <"image yolu">
+python cli.py --modelPath <"path model"> --imagePath <"image path">
 ```
 
 ## Using API
