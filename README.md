@@ -37,9 +37,14 @@ cd Cattle_Species_Detection_with_Pytorch
 pip install -r requirements.txt
 ```
 
-## Usage
+## Using CLI
 ```bash
-python main.py --modelPath <"model yolu"> --imagePath <"image yolu">
+python cli.py --modelPath <"model yolu"> --imagePath <"image yolu">
+```
+
+## Using API
+```bash
+uvicorn api:app --reload
 ```
 
 ## Training
