@@ -86,7 +86,3 @@ if __name__ == "__main__":
     for index, image_path in enumerate(image_paths):
         shutil.copy2(image_path, cluster_dir(labels[index]))
 
-
-
-
-
