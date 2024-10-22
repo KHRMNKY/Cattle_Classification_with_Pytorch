@@ -121,8 +121,6 @@ def get_image(image_Id: str, db: Session = Depends(get_db)):
 
     
 
-
-
 @app.put("/images/", response_model=schemas.img_base)
 def update_image(image_Id: str, db: Session = Depends(get_db), update_Id: str = None, update_Name: str = None):
     update_image = db.query(models.Image).filter(models.Image.image_Id == image_Id).first()
@@ -149,10 +147,11 @@ async def delete_image(image_Id: str, db: Session = Depends(get_db)):
     db.delete(image)
     db.commit()
     return schemas.img_base(image_Id=image.image_Id, image_Name=image.image_Name, image_embedding=base64.b64encode(image.image_embedding).decode('utf-8'))
- 
+
 
 
 if __name__ == "__main__":
+
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="debug")
 
