@@ -1,14 +1,17 @@
-FROM python:3.8-slim
+# Use an official image as a base
+FROM python:3.10.9
 
-RUN apt-get update && apt-get install -y git
-
-COPY . /app
-
+# Set the working directory in the container
 WORKDIR /app
 
-RUN pip install -r requirements.txt
+# Copy the application code
+COPY .  .
 
-CMD python api.py
+RUN pip install  --no-cache-dir -r requirements.txt
 
+# Expose the port
+EXPOSE 8000
 
+# Run the command when the container launches
+CMD ["uvicorn", "api:app", "--host", "127.0.0.1", "--port", "8000"]
 

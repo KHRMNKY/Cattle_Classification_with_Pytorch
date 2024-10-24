@@ -31,7 +31,7 @@ decorator==5.1.1
 defusedxml==0.7.1
 dill==0.3.8
 executing==2.1.0
-fastai==2.7.18
+#fastai==2.7.18
 fastapi==0.115.2
 fastbook==0.0.29
 fastcore==1.7.19
@@ -119,8 +119,8 @@ python-dateutil==2.9.0.post0
 python-json-logger==2.0.7
 python-multipart==0.0.12
 pytz==2024.2
-pywin32==308
-pywinpty==2.0.14
+#pywin32==308
+#pywinpty==2.0.14
 PyYAML==6.0.2
 pyzmq==26.2.0
 referencing==0.35.1
