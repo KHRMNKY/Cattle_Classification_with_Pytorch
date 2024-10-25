@@ -1,17 +1,19 @@
-# Use an official image as a base
-FROM python:3.10.9
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
-# Set the working directory in the container
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy the application code
-COPY .  .
+COPY requirements.txt .
 
-RUN pip install  --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port
-EXPOSE 8000
+COPY . .
 
-# Run the command when the container launches
-CMD ["uvicorn", "api:app", "--host", "127.0.0.1", "--port", "8000"]
+EXPOSE 8080
+
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0" ,"--port", "8080"]
 
