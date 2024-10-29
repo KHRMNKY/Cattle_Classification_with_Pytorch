@@ -2,10 +2,11 @@ import torchvision
 import io
 import torch
 from torch import nn
-from utils import device, transform, classes
+from utils import device, transform, classes, image_pred
 from PIL import Image
 import pickle
 import base64
+
 
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
@@ -23,14 +24,13 @@ class Pred(BaseModel):
     label: str
     confidence: float
 
-#models.Base.metadata.drop_all(bind=database.engine) 
 models.Base.metadata.create_all(bind=database.engine)
-
 
 app = FastAPI()
 
 
 def create_Id():
+
     return str(uuid.uuid4())
 
 
@@ -50,6 +50,11 @@ def get_db():
     finally:
         db.close()
 
+
+
+@app.get("/")
+async def read_root():
+    return {"Don't forget to add docs in url http://127.0.0.1:8000"}
 
 
 
@@ -80,14 +85,8 @@ async def save_image_to_database(image_file: UploadFile = File(...), db: Session
 
 
 
-
 @app.post("/predict", response_model=Pred)
-def image_predd(image_Id: str, db: Session = Depends(get_db)):
-    db_image = db.query(models.Image).filter(models.Image.image_Id == image_Id).first()
-
-    if db_image is None:
-        raise HTTPException(status_code=404, detail="Image not found")
-    
+async def image_predd(image_file: UploadFile = File(...), db: Session = Depends(get_db)):
     model = torchvision.models.resnet50()
     model.fc = nn.Linear(in_features=2048, out_features=7, bias=True)
     model_weights = torch.load(modelPath, map_location=device)
@@ -95,45 +94,44 @@ def image_predd(image_Id: str, db: Session = Depends(get_db)):
     model.to(device)
     model.eval()
 
-
-    
     with torch.no_grad():
-       
-       image_embedding_tensor = torch.tensor(pickle.loads(db_image.image_embedding))
-       print(image_embedding_tensor.shape)
-       img = transform(image_embedding_tensor).unsqueeze(0).to(device)
+       img = Image.open(io.BytesIO(await image_file.read())).convert("RGB")
+       img = transform(img).unsqueeze(0).to(device)
        loggit = model(img)
        preds = nn.Softmax(dim=1)(loggit)
        pred = torch.argmax(preds, dim=1).item()
-       label, confidence = classes[pred], preds[0][pred]*100
-    return Pred(label=label, confidence=confidence)
+    return Pred(label=classes[pred], confidence=preds[0][pred]*100)
+
+
 
 
 
 
 @app.get("/images/{image_Id}", response_model=schemas.img_base)
-def get_image(image_Id: str, db: Session = Depends(get_db)):
+def get_imagee(image_Id: str, db: Session = Depends(get_db)):
     db_image = crud.get_image(db, image_Id)
-    db_image.image_embedding = base64.b64decode(db_image.image_embedding)
-    return db_image
+    name, id=db_image.image_Id, db_image.image_Name
+    return schemas.img_base(image_Id=db_image.image_Id, image_Name=db_image.image_Name, image_embedding=base64.b64encode(db_image.image_embedding).decode('utf-8'))
 
 
 
-    
+
+
 
 @app.put("/images/", response_model=schemas.img_base)
 def update_image(image_Id: str, db: Session = Depends(get_db), update_Id: str = None, update_Name: str = None):
-    update_image = db.query(models.Image).filter(models.Image.image_Id == image_Id).first()
+    update_imagee = db.query(models.Image).filter(models.Image.image_Id == image_Id).first()
 
-    if update_image is None:
+    if update_imagee is None:
         raise HTTPException(status_code=404, detail="Image not found")
     
-    update_image.image_Name = update_Name
-    update_image.image_Id = update_Id
+    update_imagee.image_Name = update_Name
+    update_imagee.image_Id = update_Id
 
     db.commit()
-    db.refresh(update_image)
-    return update_image
+    db.refresh(update_imagee)
+    return schemas.img_base(image_Id=update_imagee.image_Id, image_Name=update_imagee.image_Name, image_embedding=base64.b64encode(update_imagee.image_embedding).decode('utf-8'))
+
 
 
 @app.delete("/images/", response_model=schemas.img_base)
