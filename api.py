@@ -7,26 +7,39 @@ from PIL import Image
 import pickle
 import base64
 
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from SQLite import models, schemas, database, crud
 from pydantic import BaseModel
 import uuid
 
+
 import clip
 model, preprocess = clip.load("ViT-B/32", device)
 
-modelPath = ".\\models\\model_(92.71%)_acc.pth"
+#modelPath = ".\\models\\model_(92.71%)_acc.pth"
+modelPath = "./models/model_(92.71%)_acc.pth"
 
 
 class Pred(BaseModel):
     label: str
-    confidence: float
+    confidence: list[float]
+    
+
+
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Frontend URL'si
+    allow_credentials=True,
+    allow_methods=["*"],  # Tüm HTTP yöntemlerine izin
+    allow_headers=["*"],  # Tüm header'lara izin
+)
 
 
 def create_Id():
@@ -55,6 +68,8 @@ def get_db():
 @app.get("/")
 async def read_root():
     return {"Don't forget to add docs in url http://127.0.0.1:8000"}
+
+
 
 
 
@@ -100,7 +115,31 @@ async def image_predd(image_file: UploadFile = File(...), db: Session = Depends(
        loggit = model(img)
        preds = nn.Softmax(dim=1)(loggit)
        pred = torch.argmax(preds, dim=1).item()
-    return Pred(label=classes[pred], confidence=preds[0][pred]*100)
+    return Pred(label=classes[pred], confidence=[preds[0][pred]*100])
+
+
+
+
+
+@app.post("/predicts", response_model=Pred)
+async def image_preddd(image_file: UploadFile = File(...), db: Session = Depends(get_db)):
+    model = torchvision.models.resnet50()
+    model.fc = nn.Linear(in_features=2048, out_features=7, bias=True)
+    model_weights = torch.load(modelPath, map_location=device)
+    model.load_state_dict(model_weights)
+    model.to(device)
+    model.eval()
+    
+
+    with torch.no_grad():
+       img = Image.open(io.BytesIO(await image_file.read())).convert("RGB")
+       img = transform(img).unsqueeze(0).to(device)
+       loggit = model(img)
+       preds = nn.Softmax(dim=1)(loggit)
+       #print(f"preds : {preds}") # tensor([[0.1019, 0.1149, 0.0221, 0.0827, 0.1414, 0.3940, 0.1432]], device='cuda:0')
+       preds_float_list = preds[0].cpu().detach().numpy().tolist()
+       pred = torch.argmax(preds, dim=1).item()
+    return Pred(label=classes[pred], confidence=preds_float_list)
 
 
 
@@ -152,5 +191,3 @@ if __name__ == "__main__":
 
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="debug")
-
-
