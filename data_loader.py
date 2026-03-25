@@ -13,3 +13,4 @@ def get_data_loader(transform):
         test_loader = DataLoader(test_dataset, batch_size=32, shuffle=True)
         return train_loader, test_loader, classes
 
+
