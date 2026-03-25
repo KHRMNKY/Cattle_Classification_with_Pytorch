@@ -52,6 +52,49 @@ python cli.py --modelPath <"path model"> --imagePath <"image path">
 ![image](https://github.com/user-attachments/assets/87b59a8c-f008-4360-b066-9521c5b30ac8)
 
 
+## Deployment
+
+### Live API
+The project is now deployed and available online:
+
+- **API URL:** https://cow.kahramankaya.com
+- **API Documentation (Swagger UI):** https://cow.kahramankaya.com/docs#/
+- **API Documentation (ReDoc):** https://cow.kahramankaya.com/redoc
+
+### Usage Examples
+
+#### Cattle Classification
+The API provides two endpoints for cattle breed classification:
+
+1. **`/predict`** - Returns only the predicted breed with highest confidence
+2. **`/predicts`** - Returns all breed probabilities (detailed prediction)
+
+#### Image Database Operations
+The API also supports image storage and retrieval operations:
+
+- **`POST /images/`** - Upload and store an image
+- **`GET /images/{image_Id}`** - Retrieve image information by ID
+- **`PUT /images/`** - Update image information
+- **`DELETE /images/`** - Delete an image from database
+
+### Supported Cattle Breeds
+- Aberdeen Angus
+- Charolais
+- Hereford
+- Holstein
+- Jersey
+- Montofon
+- Simmental
+
+### API Response Example
+```json
+{
+  "label": "Holstein",
+  "confidence": [0.1019, 0.1149, 0.0221, 0.0827, 0.1414, 0.3940, 0.1432]
+}
+```
+
+
 
 ## Training
 
